@@ -50,13 +50,6 @@ RCT_EXPORT_MODULE()
     }
 }
 
--(NSString *)fetchAccessToken
-{
-    NSString *accessTokenUrlString = [NSString stringWithFormat:@"%@/identity=%@&platform=ios", kAccessTokenUrl, @"alice"];
-    NSString *accessToken = [NSString stringWithContentsOfURL:[NSURL URLWithString:accessTokenUrlString] encoding:NSUTF8StringEncoding error:nil];
-    return accessToken;
-}
-
 RCT_EXPORT_METHOD(initWithToken:(NSString *)token resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
     if ([token isEqualToString:@""]) {
@@ -70,7 +63,7 @@ RCT_EXPORT_METHOD(initWithToken:(NSString *)token resolver:(RCTPromiseResolveBlo
                 reject(@"400", @"Record permission is required to be initialized", nil);
             } else {
                 [self registerForCallInvite];
-                self->_accessToken = token;
+                self->_accessToken = token;      
                 resolve(@{@"initialized": @true});
             }
         }];
@@ -285,10 +278,13 @@ RCT_EXPORT_METHOD(reject)
 }
 
 #pragma mark - PKPushRegistryDelegate
-- (void)pushRegistry:(nonnull PKPushRegistry *)registry didUpdatePushCredentials:(nonnull PKPushCredentials *)pushCredentials forType:(nonnull PKPushType)type
-{
+- (void)pushRegistry:(PKPushRegistry *)registry didUpdatePushCredentials:(PKPushCredentials *)credentials forType:(NSString *)type {
     if ([type isEqualToString:PKPushTypeVoIP]) {
-        _deviceToken = pushCredentials.token.description;
+        const unsigned *tokenBytes = [credentials.token bytes];
+        _deviceToken = [NSString stringWithFormat:@"<%08x %08x %08x %08x %08x %08x %08x %08x>", 
+                                                        ntohl(tokenBytes[0]), ntohl(tokenBytes[1]), ntohl(tokenBytes[2]),
+                                                        ntohl(tokenBytes[3]), ntohl(tokenBytes[4]), ntohl(tokenBytes[5]),
+                                                        ntohl(tokenBytes[6]), ntohl(tokenBytes[7])];
         if (_accessToken && _deviceToken) {
             [TwilioVoice registerWithAccessToken:_accessToken deviceToken:_deviceToken completion:^(NSError * _Nullable error) {
                 if (error) {
