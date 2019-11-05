@@ -1,6 +1,6 @@
 {
-  "name": "react-native-twilio-voice-module",
-  "version": "1.0.12",
+  "name": "@x-guard/react-native-twilio-voice-module",
+  "version": "1.0.13",
   "description": "Twilio programmable voice module for react native",
   "main": "index.js",
   "directories": {
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/danielsGit/react-native-twilio-voice-module.git"
+    "url": "git+https://github.com/X-Guard/react-native-twilio-voice-module.git"
   },
   "keywords": [
     "react",
